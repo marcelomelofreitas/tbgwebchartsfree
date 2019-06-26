@@ -9,7 +9,6 @@ Type
   TModelHTMLChartsLines = class(TInterfacedObject, iModelHTMLChartsLines)
     private
       FHTML : String;
-      [weak]
       FParent : iModelHTMLCharts;
       FConfig : iModelHTMLChartsConfig<iModelHTMLChartsLines>;
     public
@@ -25,7 +24,7 @@ Type
 implementation
 
 uses
-  Charts.Config, SysUtils;
+  Charts.Config, SysUtils, Injection;
 
 { TModelHTMLChartsLines }
 
@@ -35,13 +34,14 @@ begin
   FParent.HTML('<div class="col-'+IntToStr(FConfig.ColSpan)+'">  ');
   FParent.HTML('<canvas id="'+FConfig.Name+'" ');
   if FConfig.Width > 0 then
-    FParent.HTML('width="'+IntToStr(FConfig.Width)+'" ');
+    FParent.HTML('width="'+IntToStr(FConfig.Width)+'px" ');
   if FConfig.Heigth > 0 then
-    FParent.HTML('height="'+IntToStr(FConfig.Heigth)+'" ');
+    FParent.HTML('height="'+IntToStr(FConfig.Heigth)+'px" ');
   FParent.HTML('></canvas>  ');
   FParent.HTML('<script>  ');
-  FParent.HTML('var MONTHS = '+FConfig.ResultLabels+';  ');
-  FParent.HTML('var config = { ');
+
+  FParent.HTML('var ctx = document.getElementById('''+FConfig.Name+''').getContext(''2d''); ');
+  FParent.HTML('var myChart = new Chart(ctx, { ');
   FParent.HTML('type: ''line'', ');
   FParent.HTML('data: { ');
   FParent.HTML('labels: '+FConfig.ResultLabels+',  ');
@@ -49,43 +49,8 @@ begin
   FParent.HTML(FConfig.ResultDataSet);
   FParent.HTML(']  ');
   FParent.HTML('}, ');
-  FParent.HTML('options: { ');
-  FParent.HTML('responsive: true, ');
-  FParent.HTML('title: { ');
-  FParent.HTML('display: true, ');
-  FParent.HTML('text: '''+FConfig.Title+''' ');
-  FParent.HTML('}, ');
-  FParent.HTML('tooltips: { ');
-  FParent.HTML('mode: ''index'', ');
-  FParent.HTML('intersect: false, ');
-  FParent.HTML('}, ');
-  FParent.HTML('hover: { ');
-  FParent.HTML('mode: ''nearest'', ');
-  FParent.HTML('intersect: true ');
-  FParent.HTML('}, ');
-  FParent.HTML('scales: { ');
-  FParent.HTML('xAxes: [{ ');
-  FParent.HTML('display: true, ');
-  FParent.HTML('scaleLabel: { ');
-  FParent.HTML('display: true, ');
-  //FParent.HTML('labelString: ''Month'' ');
-  FParent.HTML('} ');
-  FParent.HTML('}], ');
-  FParent.HTML('yAxes: [{ ');
-  FParent.HTML('display: true, ');
-  FParent.HTML('scaleLabel: { ');
-  FParent.HTML('display: true, ');
-  //FParent.HTML('labelString: ''Value'' ');
-  FParent.HTML('} ');
-  FParent.HTML('}] ');
-  FParent.HTML('} ');
-  FParent.HTML('} ');
-  FParent.HTML('}; ');
-  FParent.HTML(' ');
-  FParent.HTML('window.onload = function() { ');
-  FParent.HTML('var ctx = document.getElementById('''+FConfig.Name+''').getContext(''2d''); ');
-  FParent.HTML('window.myLine = new Chart(ctx, config); ');
-  FParent.HTML('}; ');
+  FParent.HTML('options: { responsive: true, legend: { position: ''top'', }, title: { display: true, text: '''+FConfig.Title+''' } }, ');
+  FParent.HTML('}); ');
   FParent.HTML('</script>  ');
   FParent.HTML('</div>  ');
 end;
@@ -108,7 +73,7 @@ end;
 
 constructor TModelHTMLChartsLines.Create(Parent : iModelHTMLCharts);
 begin
-  FParent := Parent;
+  TInjection.Weak(@FParent, Parent);
   FConfig := TModelHTMLChartsConfig<iModelHTMLChartsLines>.New(Self);
 end;
 

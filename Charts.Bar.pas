@@ -9,7 +9,6 @@ Type
   TModelHTMLChartsBar = class(TInterfacedObject, iModelHTMLChartsBar)
     private
       FHTML : String;
-      [weak]
       FParent : iModelHTMLCharts;
       FConfig : iModelHTMLChartsConfig<iModelHTMLChartsBar>;
     public
@@ -25,7 +24,7 @@ Type
 implementation
 
 uses
-  Charts.Config, SysUtils;
+  Charts.Config, SysUtils, Injection;
 
 { TModelHTMLChartsBar }
 
@@ -50,7 +49,7 @@ begin
   FParent.HTML(FConfig.ResultDataSet);
   FParent.HTML(']  ');
   FParent.HTML('}, ');
-  FParent.HTML('options: { responsive: true, legend: { position: ''top'', }, title: { display: true, text: '''+FConfig.Title+''' } }, ');
+  FParent.HTML('options: {  scales: { yAxes: [{ ticks: { beginAtZero: true } }] }, responsive: true, legend: { position: ''top'', }, title: { display: true, text: '''+FConfig.Title+''' } }, ');
   FParent.HTML('}); ');
   FParent.HTML('</script>  ');
   FParent.HTML('</div>  ');
@@ -74,7 +73,7 @@ end;
 
 constructor TModelHTMLChartsBar.Create(Parent : iModelHTMLCharts);
 begin
-  FParent := Parent;
+  TInjection.Weak(@FParent, Parent);
   FConfig := TModelHTMLChartsConfig<iModelHTMLChartsBar>.New(Self);
 end;
 
